@@ -1,0 +1,160 @@
+package view;
+
+
+import java.awt.EventQueue;
+
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
+
+import model.bean.Filme;
+import model.dao.FilmeDAO;
+
+import javax.swing.JButton;
+import java.awt.Font;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.WindowFocusListener;
+import java.awt.event.WindowEvent;
+
+public class JFListarFilmes extends JFrame {
+
+	private JPanel contentPane;
+	private JTable jtFilme;
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					JFListarFilmes frame = new JFListarFilmes();
+					frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	/**
+	 * Create the frame.
+	 */
+	
+	public JFListarFilmes() {
+		addWindowFocusListener(new WindowFocusListener() {
+			public void windowGainedFocus(WindowEvent arg0) {
+				readJTable();
+			}
+			public void windowLostFocus(WindowEvent e) {
+
+			}
+		});
+		setTitle("Listar Filmes");
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setBounds(100, 100, 670, 421);
+		contentPane = new JPanel();
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		setContentPane(contentPane);
+		contentPane.setLayout(null);
+		
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBounds(10, 11, 633, 303);
+		contentPane.add(scrollPane);
+		
+		jtFilme = new JTable();
+		jtFilme.setModel(new DefaultTableModel(
+			new Object[][] {
+			},
+			new String[] {
+				"idFilme", "Título", "Categoria", "Tempo"
+			}
+		));
+		scrollPane.setViewportView(jtFilme);
+		
+		JButton btnCadastrar = new JButton("Cadastrar Filme");
+		btnCadastrar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JFCadastrarFilme cf = new JFCadastrarFilme();
+				cf.setVisible(true);
+				readJTable();
+			}
+		});
+		btnCadastrar.setFont(new Font("Tahoma", Font.PLAIN, 13));
+		btnCadastrar.setBounds(10, 342, 123, 30);
+		contentPane.add(btnCadastrar);
+		
+		JButton btnAlterar = new JButton("Alterar Filme");
+		btnAlterar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				//verificar se há linha selecionada
+				if(jtFilme.getSelectedRow() != -1) {
+					JFAtualizarFilme af = new JFAtualizarFilme((int)jtFilme.getValueAt(jtFilme.getSelectedRow(), 0));				
+					af.setVisible(true);
+				} else {
+					JOptionPane.showMessageDialog(null, "Selecione um filme");	
+				}
+				
+				readJTable();
+				
+			}
+		});
+		btnAlterar.setFont(new Font("Tahoma", Font.PLAIN, 13));
+		btnAlterar.setBounds(143, 342, 111, 30);
+		contentPane.add(btnAlterar);
+		
+		JButton btnExcluir = new JButton("Excluir Filme");
+		btnExcluir.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(jtFilme.getSelectedRow() != -1) {	
+					
+				int opcao = JOptionPane.showConfirmDialog(null, "Deseja excluir o filme selecionado?", "Exclusão", JOptionPane.YES_NO_OPTION);		
+				if(opcao == 0) {
+					FilmeDAO dao = new FilmeDAO();
+					Filme f = new Filme();
+					f.setIdFilme((int) jtFilme.getValueAt(jtFilme.getSelectedRow(), 0));
+					dao.delete(f);
+				}else {
+					JOptionPane.showMessageDialog(null, "Selecione um filme!");
+				}
+				readJTable();
+				
+				}
+			}
+		});
+		btnExcluir.setFont(new Font("Tahoma", Font.PLAIN, 13));
+		btnExcluir.setBounds(264, 342, 111, 30);
+		contentPane.add(btnExcluir);
+		
+		JButton btnCancelar = new JButton("Cancelar");
+		btnCancelar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+			}
+		});
+		btnCancelar.setFont(new Font("Tahoma", Font.PLAIN, 13));
+		btnCancelar.setBounds(385, 342, 104, 30);
+		contentPane.add(btnCancelar);
+		
+		readJTable();
+	}
+	
+	public void readJTable() {
+		DefaultTableModel modelo = (DefaultTableModel) jtFilme.getModel();
+		modelo.setNumRows(0);
+		FilmeDAO fdao = new FilmeDAO();
+		for(Filme f : fdao.read()) {
+			modelo.addRow(new Object[] {
+					f.getIdFilme(),
+					f.getTitulo(),
+					f.getCategoria(),
+					f.getTempo()
+			});
+		}
+		
+	}
+}
